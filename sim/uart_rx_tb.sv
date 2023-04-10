@@ -4,22 +4,15 @@
 Test bench for uart_tx.sv
 */
 
-module uart_tx_tb(); 
-
-
-
+module uart_rx_tb(); 
 
 // PARAMETERS 
 localparam PERIOD = 10;
 
 logic 		clk;
 logic 		rst_n; 
-// For tx
-logic 		tx_send_i;
-logic [7:0] tx_data_i;
-logic 		tx_data_o; // rx_data_in
-// For rx
-
+logic       data_i;
+logic [7:0] data_o;
 
 // create clock signal
 initial begin
@@ -27,7 +20,6 @@ initial begin
 	forever #(PERIOD/2) clk = ~clk;
 end 
 
-// initial reset
 task reset(); 
     begin 
         rst_n <= 1;
@@ -37,40 +29,52 @@ task reset();
 endtask 
 
 
-uart_tx tx (
-				.clk(clk),
-				.rst_n(rst_n),
-				.tx_send_i(tx_send_i),
-				.data_i(tx_data_i),
-				.data_o(tx_data_o)
-			); 
-            
-
-           
-
+uart_rx MUT (
+    .clk(clk),
+    .rst_n(rst_n),
+    .data_i(data_i),
+    .data_o(data_o)
+    );
+    
 initial begin
+    // initial setyup
+    data_i <= 1; 
     reset();
-	tx_send_i = 0;
-	tx_data_i = '0;
-	#(PERIOD*10000);
-	#(PERIOD*100);
-	tx_data_i = 8'b01010101;
-	#(PERIOD*10000);
-	tx_send_i = 1;
-	#(PERIOD*10);
-	tx_send_i = 0;
-	#(PERIOD*50000);
+	#(PERIOD*1000);
+    data_i <= 0;
+    //data 1
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+      //data 2
+    @(negedge MUT.baud_clk); 
+    data_i <= 0;
+      //data 3
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+      //data 4
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+      //data 5
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+      //data 6
+    @(negedge MUT.baud_clk); 
+    data_i <= 0;
+      //data 7
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+     //data 8
+    @(negedge MUT.baud_clk); 
+    data_i <= 0;
+    // stop
+    @(negedge MUT.baud_clk); 
+    data_i <= 1;
+    #(PERIOD*10);
+    #(PERIOD*10000);
+    
 	
 	$stop();
 
 end
-
-
-
-
-
-
-
-
 
 endmodule
